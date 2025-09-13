@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Налаштування — Темний режим</title>
+    <link rel="stylesheet" href="styles/options.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Налаштування</h1>
+
+      <section class="card">
+        <h2>Глобальний перемикач</h2>
+        <label class="switch-row">
+          <input type="checkbox" id="global-enabled" />
+          <span>Увімкнути темний режим всюди</span>
+        </label>
+      </section>
+
+      <section class="card">
+        <h2>Режим застосування</h2>
+        <div class="row">
+          <label><input type="radio" name="mode" value="all" checked /> Застосовувати всюди (окрім виключень)</label>
+        </div>
+        <div class="row">
+          <label><input type="radio" name="mode" value="whitelist" /> Лише на дозволених сайтах</label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Виключення сайтів</h2>
+        <p class="muted">Додавайте хости, на яких не слід застосовувати темний режим. Один запис — один хост, напр.: <code>example.com</code></p>
+
+        <div class="row">
+          <input type="text" id="host-input" placeholder="введіть хост, напр. example.com" />
+          <button id="add-host" class="btn">Додати</button>
+        </div>
+
+        <ul id="host-list" class="list"></ul>
+
+        <div class="row actions">
+          <button id="export" class="btn secondary">Експорт</button>
+          <label class="btn secondary file-label">
+            Імпорт
+            <input type="file" id="import" accept="application/json" hidden />
+          </label>
+          <button id="clear" class="btn danger">Очистити всі</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Дозволені сайти</h2>
+        <p class="muted">Список хостів, на яких темний режим має працювати у режимі «Лише дозволені сайти».</p>
+        <div class="row">
+          <input type="text" id="allow-host-input" placeholder="введіть хост, напр. example.com" />
+          <button id="add-allow-host" class="btn">Додати</button>
+        </div>
+        <ul id="allow-host-list" class="list"></ul>
+      </section>
+
+      <section class="card">
+        <h2>Інтенсивність теми</h2>
+        <p class="muted">Налаштуйте силу інверсії. 100% — максимально темна, 0% — вимкнено.</p>
+        <div class="row">
+          <input type="range" id="intensity" min="0" max="100" step="1" />
+          <span id="intensity-value" class="muted">100%</span>
+        </div>
+      </section>
+
+      <footer class="muted small">Версія 1.0.0</footer>
+    </main>
+
+    <script src="scripts/options.js"></script>
+  </body>
+  </html>

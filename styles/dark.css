@@ -2,8 +2,9 @@
    Styles only apply when html[data-dark-mode="on"] is present. */
 
 /* Base invert with hue-rotate gives a decent universal dark mode */
+/* Intensity is controlled via CSS var --dm-i in range 0..1 */
 html[data-dark-mode="on"] {
-  filter: invert(1) hue-rotate(180deg);
+  filter: invert(var(--dm-i, 1)) hue-rotate(calc(180deg * var(--dm-i, 1)));
 }
 
 /* Try to reduce flash by setting background early */
@@ -21,7 +22,8 @@ html[data-dark-mode="on"] canvas,
 html[data-dark-mode="on"] iframe,
 html[data-dark-mode="on"] [style*="background-image"],
 html[data-dark-mode="on"] .no-dark {
-  filter: invert(1) hue-rotate(180deg) !important;
+  /* Apply same filter again to (approximately) counteract */
+  filter: invert(var(--dm-i, 1)) hue-rotate(calc(180deg * var(--dm-i, 1))) !important;
 }
 
 /* Form controls fine-tune (avoid too-bright backgrounds) */
@@ -43,4 +45,3 @@ html[data-dark-mode="on"] ::selection {
   background: #2e5b99 !important;
   color: #fff !important;
 }
-

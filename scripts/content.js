@@ -4,11 +4,17 @@
   const STORAGE_KEYS = {
     GLOBAL_ENABLED: 'globalEnabled',
     EXCLUDED: 'excludedHosts',
+    ALLOWED: 'allowedHosts',
+    MODE: 'mode', // 'all' | 'whitelist'
+    INTENSITY: 'intensity', // 0..1
   };
 
   const DEFAULTS = {
     [STORAGE_KEYS.GLOBAL_ENABLED]: true,
     [STORAGE_KEYS.EXCLUDED]: [],
+    [STORAGE_KEYS.ALLOWED]: [],
+    [STORAGE_KEYS.MODE]: 'all',
+    [STORAGE_KEYS.INTENSITY]: 1,
   };
 
   // Fast attribute toggle to avoid re-creating nodes repeatedly
@@ -47,10 +53,19 @@
 
   async function evaluateAndApply() {
     try {
-      const { globalEnabled, excludedHosts } = await readSettings();
+      const { globalEnabled, excludedHosts, allowedHosts, mode, intensity } = await readSettings();
       const host = getHost();
-      const enabled = !!globalEnabled && !includesHost(excludedHosts || [], host);
+      let enabled = !!globalEnabled;
+      if (enabled) {
+        if ((mode || 'all') === 'whitelist') {
+          enabled = includesHost(allowedHosts || [], host);
+        } else {
+          enabled = !includesHost(excludedHosts || [], host);
+        }
+      }
       setDarkMode(enabled);
+      const i = Math.max(0, Math.min(1, Number(intensity ?? 1)));
+      try { document.documentElement.style.setProperty('--dm-i', String(i)); } catch (_) {}
     } catch (e) {
       // Fail-safe: turn off if something goes wrong
       setDarkMode(false);
@@ -68,7 +83,14 @@
 
   // Also react to storage changes (e.g., options changed elsewhere)
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'sync' && (changes[STORAGE_KEYS.GLOBAL_ENABLED] || changes[STORAGE_KEYS.EXCLUDED])) {
+    if (area !== 'sync') return;
+    if (
+      changes[STORAGE_KEYS.GLOBAL_ENABLED] ||
+      changes[STORAGE_KEYS.EXCLUDED] ||
+      changes[STORAGE_KEYS.ALLOWED] ||
+      changes[STORAGE_KEYS.MODE] ||
+      changes[STORAGE_KEYS.INTENSITY]
+    ) {
       evaluateAndApply();
     }
   });

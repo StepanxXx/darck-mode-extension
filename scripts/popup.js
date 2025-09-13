@@ -1,11 +1,15 @@
 const STORAGE_KEYS = {
   GLOBAL_ENABLED: 'globalEnabled',
   EXCLUDED: 'excludedHosts',
+  ALLOWED: 'allowedHosts',
+  MODE: 'mode', // 'all' | 'whitelist'
 };
 
 const DEFAULTS = {
   [STORAGE_KEYS.GLOBAL_ENABLED]: true,
   [STORAGE_KEYS.EXCLUDED]: [],
+  [STORAGE_KEYS.ALLOWED]: [],
+  [STORAGE_KEYS.MODE]: 'all',
 };
 
 function getActiveTab() {
@@ -43,15 +47,25 @@ function uniq(arr) {
 async function refreshUI() {
   const tab = await getActiveTab();
   const host = tab ? getHostFromUrl(tab.url) : '';
-  const { globalEnabled, excludedHosts } = await loadStorage();
+  const { globalEnabled, excludedHosts, allowedHosts, mode } = await loadStorage();
 
   const globalToggle = document.getElementById('global-toggle');
-  const excludeToggle = document.getElementById('exclude-toggle');
+  const siteToggle = document.getElementById('site-toggle');
+  const siteToggleLabel = document.getElementById('site-toggle-label');
   const siteInfo = document.getElementById('site-info');
 
+  const currentMode = (mode || 'all');
   globalToggle.checked = !!globalEnabled;
-  const isExcluded = (excludedHosts || []).some((h) => h === host || (host && host.endsWith('.' + h)));
-  excludeToggle.checked = isExcluded;
+
+  if (currentMode === 'whitelist') {
+    siteToggleLabel.textContent = 'Застосовувати на цьому сайті';
+    const isAllowed = (allowedHosts || []).some((h) => h === host || (host && host.endsWith('.' + h)));
+    siteToggle.checked = isAllowed;
+  } else {
+    siteToggleLabel.textContent = 'Не застосовувати на цьому сайті';
+    const isExcluded = (excludedHosts || []).some((h) => h === host || (host && host.endsWith('.' + h)));
+    siteToggle.checked = isExcluded;
+  }
 
   if (host) {
     siteInfo.textContent = `Поточний сайт: ${host}`;
@@ -81,30 +95,39 @@ async function onGlobalToggleChange(ev) {
   await applyChangesAndNotify();
 }
 
-async function onExcludeToggleChange(ev) {
+async function onSiteToggleChange(ev) {
   const tab = await getActiveTab();
   const host = tab ? getHostFromUrl(tab.url) : '';
   if (!host) return;
 
-  const { excludedHosts } = await loadStorage();
-  const list = Array.isArray(excludedHosts) ? excludedHosts.slice() : [];
-
-  const idxExact = list.findIndex((h) => h === host);
-  const currentlyExcluded = idxExact !== -1;
-
-  if (ev.target.checked) {
-    // add host to exclusions
-    if (!currentlyExcluded) list.push(host);
+  const { excludedHosts, allowedHosts, mode } = await loadStorage();
+  const currentMode = (mode || 'all');
+  if (currentMode === 'whitelist') {
+    const list = Array.isArray(allowedHosts) ? allowedHosts.slice() : [];
+    const idxExact = list.findIndex((h) => h === host);
+    const currentlyAllowed = idxExact !== -1;
+    if (ev.target.checked) {
+      if (!currentlyAllowed) list.push(host);
+    } else {
+      if (currentlyAllowed) list.splice(idxExact, 1);
+    }
+    await saveStorage({ [STORAGE_KEYS.ALLOWED]: uniq(list) });
   } else {
-    // remove exact host; also remove parent domains if they equal host
-    if (currentlyExcluded) list.splice(idxExact, 1);
+    const list = Array.isArray(excludedHosts) ? excludedHosts.slice() : [];
+    const idxExact = list.findIndex((h) => h === host);
+    const currentlyExcluded = idxExact !== -1;
+    if (ev.target.checked) {
+      if (!currentlyExcluded) list.push(host);
+    } else {
+      if (currentlyExcluded) list.splice(idxExact, 1);
+    }
+    await saveStorage({ [STORAGE_KEYS.EXCLUDED]: uniq(list) });
   }
-  await saveStorage({ [STORAGE_KEYS.EXCLUDED]: uniq(list) });
   await applyChangesAndNotify();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   await refreshUI();
   document.getElementById('global-toggle').addEventListener('change', onGlobalToggleChange);
-  document.getElementById('exclude-toggle').addEventListener('change', onExcludeToggleChange);
+  document.getElementById('site-toggle').addEventListener('change', onSiteToggleChange);
 });
