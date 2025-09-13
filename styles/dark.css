@@ -1,0 +1,46 @@
+/* This stylesheet is always injected by the extension.
+   Styles only apply when html[data-dark-mode="on"] is present. */
+
+/* Base invert with hue-rotate gives a decent universal dark mode */
+html[data-dark-mode="on"] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Try to reduce flash by setting background early */
+html[data-dark-mode="on"],
+html[data-dark-mode="on"] body {
+  background: #111 !important;
+}
+
+/* Re-invert media and elements that shouldn't be color-shifted */
+html[data-dark-mode="on"] img,
+html[data-dark-mode="on"] video,
+html[data-dark-mode="on"] picture,
+html[data-dark-mode="on"] svg,
+html[data-dark-mode="on"] canvas,
+html[data-dark-mode="on"] iframe,
+html[data-dark-mode="on"] [style*="background-image"],
+html[data-dark-mode="on"] .no-dark {
+  filter: invert(1) hue-rotate(180deg) !important;
+}
+
+/* Form controls fine-tune (avoid too-bright backgrounds) */
+html[data-dark-mode="on"] input,
+html[data-dark-mode="on"] textarea,
+html[data-dark-mode="on"] select,
+html[data-dark-mode="on"] button {
+  background-color: rgba(32, 32, 32, 0.85) !important;
+  color: #e6e6e6 !important;
+  border-color: #555 !important;
+}
+
+/* Tweak default link color contrast */
+html[data-dark-mode="on"] a { color: #7ab4ff !important; }
+html[data-dark-mode="on"] a:visited { color: #b096ff !important; }
+
+/* Fix overly bright highlights */
+html[data-dark-mode="on"] ::selection {
+  background: #2e5b99 !important;
+  color: #fff !important;
+}
+

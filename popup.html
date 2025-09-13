@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Темний режим</title>
+    <link rel="stylesheet" href="styles/popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Темний режим</h1>
+
+      <div class="row">
+        <label class="switch">
+          <input type="checkbox" id="global-toggle" />
+          <span class="slider"></span>
+        </label>
+        <div class="label">
+          Увімкнути темний режим всюди
+        </div>
+      </div>
+
+      <hr />
+
+      <div id="site-row" class="row">
+        <label>
+          <input type="checkbox" id="exclude-toggle" />
+          Не застосовувати на цьому сайті
+        </label>
+      </div>
+
+      <div id="site-info" class="site-info"></div>
+    </div>
+
+    <script src="scripts/popup.js"></script>
+  </body>
+  </html>
+
